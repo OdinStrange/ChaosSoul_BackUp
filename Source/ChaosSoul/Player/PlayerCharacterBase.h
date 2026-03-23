@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "PlayerCharacterBase.generated.h"
 
 UENUM(BlueprintType)
@@ -20,6 +21,9 @@ enum class EWeaponType : uint8
 	NONE UMETA(DisplayName = "NONE"),
 	SWORD UMETA(DisplayName = "SWORD"),
 	GREATSWORD UMETA(DisplayName = "GREATSWORD"),
+	BLUNT UMETA(DisplayName = "BLUNT"),
+	KATANA UMETA(DisplayName = "KATANA"),
+	
 };
 
 UCLASS()
@@ -104,6 +108,11 @@ public:
 	EPlayerStates playerState = EPlayerStates::NONE;
 	EWeaponType WeaponType = EWeaponType::NONE;
 
+	int32 SwordDamage = 100;
+	int32 GreatSwordDamage = 200;
+	int32 BluntDamage = 150;
+	int32 KatanaDamage = 50;
+
 public:
 	UPROPERTY(EditAnywhere, Category = "Sounds")
 	USoundBase* AttackSound;
@@ -117,4 +126,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	UImage* Weapon_Icon = nullptr;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	UTextBlock* WeaponTextBlock;
 };

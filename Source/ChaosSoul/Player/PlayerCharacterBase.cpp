@@ -1,4 +1,4 @@
-#include "Player/PlayerCharacterBase.h"
+Ôªø#include "Player/PlayerCharacterBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
@@ -56,6 +56,7 @@ void APlayerCharacterBase::BeginPlay()
 		HUDWidget->AddToViewport();
 
 		Weapon_Icon = Cast<UImage>(HUDWidget->GetWidgetFromName(TEXT("Sword_Icon")));
+		WeaponTextBlock = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("SubTitleText")));
 
 	}
 	if (Weapon_Icon)
@@ -63,30 +64,34 @@ void APlayerCharacterBase::BeginPlay()
 		Weapon_Icon->SetVisibility(ESlateVisibility::Hidden);
 	}
 
+	if (WeaponTextBlock)
+	{
+		WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void APlayerCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// 1. ƒ≥∏Ø≈Õ¿« ∑Œƒ√ æ’πÊ«‚ º”µµ ∞ËªÍ
+	// 1. Ï∫êÎ¶≠ÌÑ∞Ïùò Î°úÏª¨ ÏïûÎ∞©Ìñ• ÏÜçÎèÑ Í≥ÑÏÇ∞
 	float ForwardSpeed = FVector::DotProduct(GetVelocity(), GetActorForwardVector());
 
-	// 2. ∏Ò«• ∞≈∏Æ ∞·¡§ (æ’¿∏∑Œ ∞°∏È Max, µ⁄∑Œ ∞°∏È Minø° ∞°±ı∞‘)
-	// ƒ≥∏Ø≈Õ¿« √÷¥Î º”µµ ¥Î∫Ò «ˆ¿Á º”µµ ∫Ò¿≤∑Œ ∞ËªÍ«œ∞≈≥™ ∞£¥‹«— ¡∂∞«πÆ ªÁøÎ
+	// 2. Î™©Ìëú Í±∞Î¶¨ Í≤∞Ï†ï (ÏïûÏúºÎ°ú Í∞ÄÎ©¥ Max, Îí§Î°ú Í∞ÄÎ©¥ MinÏóê Í∞ÄÍπùÍ≤å)
+	// Ï∫êÎ¶≠ÌÑ∞Ïùò ÏµúÎåÄ ÏÜçÎèÑ ÎåÄÎπÑ ÌòÑÏû¨ ÏÜçÎèÑ ÎπÑÏú®Î°ú Í≥ÑÏÇ∞ÌïòÍ±∞ÎÇò Í∞ÑÎã®Ìïú Ï°∞Í±¥Î¨∏ ÏÇ¨Ïö©
 	float TargetLength = MinArmLength;
 
 	if (ForwardSpeed > 10.0f) {
-		TargetLength = MaxArmLength; // æ’¿∏∑Œ ∞• ∂ß ∏÷æÓ¡¸
+		TargetLength = MaxArmLength; // ÏïûÏúºÎ°ú Í∞à Îïå Î©ÄÏñ¥Ïßê
 	}
 	else if (ForwardSpeed < -10.0f) {
-		TargetLength = MinArmLength * 0.5f; // µ⁄∑Œ ∞• ∂ß ¥ı ¥Á∞‹¡¸
+		TargetLength = MinArmLength * 0.5f; // Îí§Î°ú Í∞à Îïå Îçî ÎãπÍ≤®Ïßê
 	}
 	else {
-		TargetLength = MinArmLength; // ¡§¡ˆ Ω√ ±‚∫ª ∞≈∏Æ
+		TargetLength = MinArmLength; // Ï†ïÏßÄ Ïãú Í∏∞Î≥∏ Í±∞Î¶¨
 	}
 
-	// 3. FInterpTo∏¶ ªÁøÎ«œø© ∫ŒµÂ∑¥∞‘ ∞≈∏Æ ¡∂¿˝
+	// 3. FInterpToÎ•º ÏÇ¨Ïö©ÌïòÏó¨ Î∂ÄÎìúÎüΩÍ≤å Í±∞Î¶¨ Ï°∞Ï†à
 	SpringArm->TargetArmLength = FMath::FInterpTo(
 		SpringArm->TargetArmLength,
 		TargetLength,
@@ -121,19 +126,34 @@ void APlayerCharacterBase::PlayerMeshInitialization()
 
 void APlayerCharacterBase::WeaponMeshInitialization()
 {
-	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GREATSWORD"));
+	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SWORD"));
 	WeaponStaticMesh->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> weapon(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Free_Prototype_Stylized_Weapons_V1/Wpn_2HSword_Set_01A1.Wpn_2HSword_Set_01A1'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SWORD(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Sword/sword/StaticMeshes/sword.sword'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> GREATSWORD(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Free_Prototype_Stylized_Weapons_V1/Wpn_2HSword_Set_01A1.Wpn_2HSword_Set_01A1'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BLUNT(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Weapon_Mace_1/weapon_mace_1/StaticMeshes/weapon_mace_1.weapon_mace_1'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> KATANA(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Katana/scene/StaticMeshes/scene.scene'"));
 
-	if (weapon.Succeeded())
+	if (SWORD.Succeeded())
 	{
-		WeaponStaticMesh->SetStaticMesh(weapon.Object);
+		WeaponStaticMesh->SetStaticMesh(SWORD.Object);
+	}
+	if (GREATSWORD.Succeeded())
+	{
+		WeaponStaticMesh->SetStaticMesh(GREATSWORD.Object);
+	}
+	if (BLUNT.Succeeded())
+	{
+		WeaponStaticMesh->SetStaticMesh(BLUNT.Object);
+	}
+	if (KATANA.Succeeded())
+	{
+		WeaponStaticMesh->SetStaticMesh(KATANA.Object);
 	}
 
 	if (WeaponStaticMesh)
 	{
-		WeaponStaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("weapon_Socket"));
+		WeaponStaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_Socket"));
 
 		WeaponStaticMesh->SetVisibility(false);
 	}
@@ -203,7 +223,7 @@ void APlayerCharacterBase::Move(const FInputActionValue& Value)
 {
 	if (playerState == EPlayerStates::ATTACK) return;
 
-	const FVector2D Movement = Value.Get<FVector2D>();//X=¡¬øÏ, Y=æ’µ⁄
+	const FVector2D Movement = Value.Get<FVector2D>();//X=Ï¢åÏö∞, Y=ÏïûÎí§
 
 	const FRotator ControlRot = Controller ? Controller->GetControlRotation() : FRotator::ZeroRotator;
 	const FRotator YawOnly(0.f, ControlRot.Yaw, 0.f);
@@ -228,7 +248,7 @@ void APlayerCharacterBase::Attack()
 {
 	playerState = EPlayerStates::ATTACK;
 
-	WeaponType = EWeaponType::SWORD;
+	WeaponType = EWeaponType::NONE;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
@@ -240,7 +260,7 @@ void APlayerCharacterBase::Attack()
 
 	}
 
-	//∂˜¥Ÿ «¸Ωƒ : [ƒ∏√≥∏ÆΩ∫∆Æ](∏≈∞≥∫Øºˆ)->π›»Ø«¸ {Ω««‡ƒ⁄µÂ};
+	//ÎûåÎã§ ÌòïÏãù : [Ï∫°Ï≤òÎ¶¨Ïä§Ìä∏](Îß§Í∞úÎ≥ÄÏàò)->Î∞òÌôòÌòï {Ïã§ÌñâÏΩîÎìú};
 
 	FTimerHandle AttackHandle;
 
@@ -267,16 +287,62 @@ void APlayerCharacterBase::WeaponChange()
 		{
 			Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
 		}
-	}
 
-	else if(bIsWeaponChange)
-	{
-		WeaponType = EWeaponType::GREATSWORD;
-		if (Weapon_Icon)
+		if (WeaponTextBlock)
 		{
-			Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+			FText Damage = FText::AsNumber(SwordDamage);
+			FText NewText = FText::Format(FText::FromString(TEXT("ÏÜåÍ≤Ä: Power {0}")), Damage);
+			WeaponTextBlock->SetText(NewText);
 		}
+	}
+	else if (bIsWeaponChange)
+	{
+			WeaponType = EWeaponType::GREATSWORD;
+			if (Weapon_Icon)
+			{
+				Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
+			}
 
+			if (WeaponTextBlock)
+			{
+				WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+				FText Damage = FText::AsNumber(GreatSwordDamage);
+				FText NewText = FText::Format(FText::FromString(TEXT("ÎåÄÍ≤Ä: Power {0}")), Damage);
+				WeaponTextBlock->SetText(NewText);
+			}
+	}
+	else if (bIsWeaponChange)
+	{
+			WeaponType = EWeaponType::BLUNT;
+			if (Weapon_Icon)
+			{
+				Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
+			}
+
+			if (WeaponTextBlock)
+			{
+				WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+				FText Damage = FText::AsNumber(BluntDamage);
+				FText NewText = FText::Format(FText::FromString(TEXT("ÎëîÍ∏∞: Power {0}")), Damage);
+				WeaponTextBlock->SetText(NewText);
+			}
+	}
+	else if (bIsWeaponChange)
+	{
+			WeaponType = EWeaponType::KATANA;
+			if (Weapon_Icon)
+			{
+				Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
+			}
+
+			if (WeaponTextBlock)
+			{
+				WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+				FText Damage = FText::AsNumber(KatanaDamage);
+				FText NewText = FText::Format(FText::FromString(TEXT("ÎèÑ: Power {0}")), Damage);
+				WeaponTextBlock->SetText(NewText);
+			}
 	}
 
 	else
@@ -287,6 +353,10 @@ void APlayerCharacterBase::WeaponChange()
 			Weapon_Icon->SetVisibility(ESlateVisibility::Hidden);
 		}
 
+		if (WeaponTextBlock)
+		{
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 	if (WeaponStaticMesh)
 	{

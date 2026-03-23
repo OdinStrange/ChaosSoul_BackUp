@@ -18,8 +18,21 @@ void UAttackAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 					UGameplayStatics::PlaySound2D(GetWorld(), Player->AttackSound);
 				}
 			}
-
-			else if (Player->WeaponType == EWeaponType::GREATSWORD)
+			if (Player->WeaponType == EWeaponType::GREATSWORD)
+			{
+				if (Player->AttackSound)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), Player->AttackSound);
+				}
+			}
+			if (Player->WeaponType == EWeaponType::BLUNT)
+			{
+				if (Player->AttackSound)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), Player->AttackSound);
+				}
+			}
+			if (Player->WeaponType == EWeaponType::KATANA)
 			{
 				if (Player->AttackSound)
 				{
