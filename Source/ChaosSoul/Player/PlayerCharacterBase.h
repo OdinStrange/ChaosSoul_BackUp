@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -42,6 +42,23 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	// 숫자키 액션 바인딩용 콜백(Enhanced Input 시그니처 고정)
+	UFUNCTION()
+	void OnSelectSword(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnSelectGreatSword(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnSelectBlunt(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnSelectKatana(const FInputActionValue& Value);
+
+	// 실제 무기 변경 로직 (입력 바인딩에 직접 연결하지 않음)
+	void ChangeWeaponTo(EWeaponType NewType);
+
 protected:
 	UPROPERTY(EditAnywhere)
 	class USpringArmComponent* SpringArm;
@@ -49,7 +66,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UCameraComponent* Camera;
 
-	// �ӵ��� ���� �� ���� ������ ���� ������
+	// 속도에 따른 팔 길이 조절을 위한 설정값
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float MinArmLength = 300.0f;
 
@@ -57,7 +74,7 @@ protected:
 	float MaxArmLength = 800.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
-	float ZoomInterpSpeed = 2.0f; // ��ȭ �ӵ�
+	float ZoomInterpSpeed = 2.0f; // 변화 속도
 
 private:
 	void PlayerMeshInitialization();
@@ -68,7 +85,6 @@ private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack();
-	void WeaponChange();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
@@ -83,12 +99,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	class UInputAction* AttackAction;
 
-	UPROPERTY(VisibleAnywhere, Category = "Input")
-	class UInputAction* WeaponChangeAction;
-
 public:
 	UPROPERTY(VisibleAnywhere)
-	bool bIsWeaponChange;
+	bool bIsChangeWeaponTo;
 
 	UPROPERTY(EditAnywhere)
 	float mouseSpeed = 30.0f;
@@ -96,11 +109,28 @@ public:
 	UPROPERTY(EditAnywhere)
 	float PlayerMoveSpeed = 30.0f;
 
-private:
 	UPROPERTY(EditAnywhere)
 	class UStaticMeshComponent* WeaponStaticMesh;
 
-private:
+	// 타입 -> 메쉬 매핑 (에디터에서 채우는 방식 권장)
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EWeaponType, TObjectPtr<UStaticMesh>> WeaponMeshMap;
+
+protected:
+	// 숫자키 입력 액션들(에디터/블루프린트에서 지정)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* SWORDAction = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* GREATSWORDAction = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* BLUNTAction = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* KATANAAction = nullptr;
+
+public:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* AttackMontage;
 
@@ -108,10 +138,10 @@ public:
 	EPlayerStates playerState = EPlayerStates::NONE;
 	EWeaponType WeaponType = EWeaponType::NONE;
 
-	int32 SwordDamage = 100;
+	int32 SwordDamage = 50;
 	int32 GreatSwordDamage = 200;
 	int32 BluntDamage = 150;
-	int32 KatanaDamage = 50;
+	int32 KatanaDamage = 100;
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Sounds")

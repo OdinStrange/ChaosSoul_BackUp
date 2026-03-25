@@ -55,7 +55,7 @@ void APlayerCharacterBase::BeginPlay()
 	{
 		HUDWidget->AddToViewport();
 
-		Weapon_Icon = Cast<UImage>(HUDWidget->GetWidgetFromName(TEXT("Sword_Icon")));
+		Weapon_Icon = Cast<UImage>(HUDWidget->GetWidgetFromName(TEXT("Weapon_Icon")));
 		WeaponTextBlock = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("SubTitleText")));
 
 	}
@@ -106,11 +106,164 @@ void APlayerCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	
+	if (!EnhancedInputComponent) return;
 
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacterBase::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacterBase::Look);
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayerCharacterBase::Attack);
-	EnhancedInputComponent->BindAction(WeaponChangeAction, ETriggerEvent::Started, this, &APlayerCharacterBase::WeaponChange);
+	// 숫자키 바인딩(Started가 의도에 맞음: "누른 순간 1회")
+	if (SWORDAction) {
+		EnhancedInputComponent->BindAction(SWORDAction, ETriggerEvent::Started, this, &APlayerCharacterBase::OnSelectSword);
+	}
+	if (GREATSWORDAction) {
+		EnhancedInputComponent->BindAction(GREATSWORDAction, ETriggerEvent::Started, this, &APlayerCharacterBase::OnSelectGreatSword);
+	}
+	if (BLUNTAction) {
+		EnhancedInputComponent->BindAction(BLUNTAction, ETriggerEvent::Started, this, &APlayerCharacterBase::OnSelectBlunt);
+	}
+	if (KATANAAction) {
+		EnhancedInputComponent->BindAction(KATANAAction, ETriggerEvent::Started, this, &APlayerCharacterBase::OnSelectKatana);
+	}
+	
+}
+
+void APlayerCharacterBase::OnSelectSword(const FInputActionValue& Value)
+{
+	ChangeWeaponTo(EWeaponType::SWORD);
+}
+
+void APlayerCharacterBase::OnSelectGreatSword(const FInputActionValue& Value)
+{
+	ChangeWeaponTo(EWeaponType::GREATSWORD);
+}
+
+void APlayerCharacterBase::OnSelectBlunt(const FInputActionValue& Value)
+{
+	ChangeWeaponTo(EWeaponType::BLUNT);
+}
+
+void APlayerCharacterBase::OnSelectKatana(const FInputActionValue& Value)
+{
+	ChangeWeaponTo(EWeaponType::KATANA);
+}
+
+void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 로직
+{
+	if (!WeaponStaticMesh) return;
+	WeaponType = NewType;
+
+    // TODO: Weapon_Icon 보이기
+    // TODO: WeaponTextBlock 보이기
+    // TODO: switch(NewType) 로 무기명/데미지 텍스트 구성
+	if (Weapon_Icon)
+	{
+		Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
+	}
+	if (WeaponTextBlock)
+	{
+		WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+	}
+	if (NewType == EWeaponType::NONE)
+	{
+		if (Weapon_Icon)
+		{
+			Weapon_Icon->SetVisibility(ESlateVisibility::Hidden);
+		}
+
+		if (WeaponTextBlock)
+		{
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
+		}
+
+		if (WeaponStaticMesh)
+		{
+			WeaponStaticMesh->SetHiddenInGame(true);
+		}
+		return;
+	}
+
+	const TObjectPtr<UStaticMesh>* FoundValuePtr = WeaponMeshMap.Find(NewType);
+	if (FoundValuePtr == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Black, FString(TEXT("Weapon is not found")));
+		return;
+	}
+
+	// TODO: UObject 포인터 꺼내기 (UStaticMesh*)
+	UStaticMesh* FoundMesh = FoundValuePtr->Get();
+
+	// TODO: FoundMesh 널 체크 분기
+	if (FoundMesh == nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Black, FString(TEXT("WeaponMesh is not found")));
+		return;
+	}
+
+	// TODO: WeaponStaticMesh 널 체크 분기
+	WeaponStaticMesh->SetStaticMesh(FoundMesh);
+
+	switch (NewType)
+	{
+		case EWeaponType::SWORD:
+		{
+			// TODO: Damage 값 선택 (SwordDamage)
+			// TODO: "소검: Power {0}" 포맷 구성
+			// TODO: WeaponTextBlock->SetText(...)
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+			FText Damage = FText::AsNumber(SwordDamage);
+			FText NewText = FText::Format(FText::FromString(TEXT("소검: Power {0}")), Damage);
+			WeaponTextBlock->SetText(NewText);
+			break;
+		}
+	
+		case EWeaponType::GREATSWORD:
+		{
+			// TODO: GreatSwordDamage로 텍스트 구성
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+			FText Damage = FText::AsNumber(GreatSwordDamage);
+			FText NewText = FText::Format(FText::FromString(TEXT("대검: Power {0}")), Damage);
+			WeaponTextBlock->SetText(NewText);
+			break;
+		}
+		case EWeaponType::BLUNT:
+		{
+			// TODO: BluntDamage로 텍스트 구성
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+			FText Damage = FText::AsNumber(BluntDamage);
+			FText NewText = FText::Format(FText::FromString(TEXT("둔기: Power {0}")), Damage);
+			WeaponTextBlock->SetText(NewText);
+			break;
+		}
+		case EWeaponType::KATANA:
+		{
+			// TODO: KatanaDamage로 텍스트 구성
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+			FText Damage = FText::AsNumber(KatanaDamage);
+			FText NewText = FText::Format(FText::FromString(TEXT("도: Power {0}")), Damage);
+			WeaponTextBlock->SetText(NewText);
+			break;
+		}
+
+		default:
+			// TODO: 예상 못한 타입 방어(숨김 or 기본 문구)
+			break;
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Black, FString(TEXT("WeaponChange")));
+
+	// TODO: BeginPlay에서 입력 액션 포인터 유효성 로그 출력
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow,
+			FString::Printf(TEXT("MoveAction=%s LookAction=%s AttackAction=%s SwordAction=%s"),
+				MoveAction ? TEXT("OK") : TEXT("NULL"),
+				LookAction ? TEXT("OK") : TEXT("NULL"),
+				AttackAction ? TEXT("OK") : TEXT("NULL"),
+				SWORDAction ? TEXT("OK") : TEXT("NULL")
+			)
+		);
+	}
 }
 
 void APlayerCharacterBase::PlayerMeshInitialization()
@@ -134,21 +287,35 @@ void APlayerCharacterBase::WeaponMeshInitialization()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BLUNT(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Weapon_Mace_1/weapon_mace_1/StaticMeshes/weapon_mace_1.weapon_mace_1'"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> KATANA(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Katana/scene/StaticMeshes/scene.scene'"));
 
+	WeaponMeshMap.Empty();
+
 	if (SWORD.Succeeded())
 	{
 		WeaponStaticMesh->SetStaticMesh(SWORD.Object);
+		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		//todo
+		WeaponMeshMap.Add(EWeaponType::SWORD, SWORD.Object);
 	}
 	if (GREATSWORD.Succeeded())
 	{
 		WeaponStaticMesh->SetStaticMesh(GREATSWORD.Object);
+		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		//todo
+		WeaponMeshMap.Add(EWeaponType::GREATSWORD, GREATSWORD.Object);
 	}
 	if (BLUNT.Succeeded())
 	{
 		WeaponStaticMesh->SetStaticMesh(BLUNT.Object);
+		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		//todo
+		WeaponMeshMap.Add(EWeaponType::BLUNT, BLUNT.Object);
 	}
 	if (KATANA.Succeeded())
 	{
 		WeaponStaticMesh->SetStaticMesh(KATANA.Object);
+		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		//todo
+		WeaponMeshMap.Add(EWeaponType::KATANA, KATANA.Object);
 	}
 
 	if (WeaponStaticMesh)
@@ -212,10 +379,25 @@ void APlayerCharacterBase::InputInitialization()
 		AttackAction = InputAttack.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder <UInputAction> InputWeaponChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_WeaponChange.IA_WeaponChange'"));
-	if (InputWeaponChange.Object != nullptr)
+	static ConstructorHelpers::FObjectFinder <UInputAction> InputSWORDChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_SWORD.IA_SWORD'"));
+	if (InputSWORDChange.Object != nullptr)
 	{
-		WeaponChangeAction = InputWeaponChange.Object;
+		SWORDAction = InputSWORDChange.Object;
+	}
+	static ConstructorHelpers::FObjectFinder <UInputAction> InputGREATSWORDChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_GREATSWORD.IA_GREATSWORD'"));
+	if (InputGREATSWORDChange.Object != nullptr)
+	{
+		GREATSWORDAction = InputGREATSWORDChange.Object;
+	}
+	static ConstructorHelpers::FObjectFinder <UInputAction> InputBLUNTChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_BLUNT.IA_BLUNT'"));
+	if (InputBLUNTChange.Object != nullptr)
+	{
+		BLUNTAction = InputBLUNTChange.Object;
+	}
+	static ConstructorHelpers::FObjectFinder <UInputAction> InputKATANAChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_KATANA.IA_KATANA'"));
+	if (InputKATANAChange.Object != nullptr)
+	{
+		KATANAAction = InputKATANAChange.Object;
 	}
 }
 
@@ -275,93 +457,4 @@ void APlayerCharacterBase::Attack()
 	if (WeaponType == EWeaponType::NONE) return;
 
 	if (playerState == EPlayerStates::ATTACK) return;
-}
-void APlayerCharacterBase::WeaponChange()
-{
-	bIsWeaponChange = !bIsWeaponChange;
-
-	if (bIsWeaponChange)
-	{
-		WeaponType = EWeaponType::SWORD;
-		if (Weapon_Icon)
-		{
-			Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
-		}
-
-		if (WeaponTextBlock)
-		{
-			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
-			FText Damage = FText::AsNumber(SwordDamage);
-			FText NewText = FText::Format(FText::FromString(TEXT("소검: Power {0}")), Damage);
-			WeaponTextBlock->SetText(NewText);
-		}
-	}
-	else if (bIsWeaponChange)
-	{
-			WeaponType = EWeaponType::GREATSWORD;
-			if (Weapon_Icon)
-			{
-				Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
-			}
-
-			if (WeaponTextBlock)
-			{
-				WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
-				FText Damage = FText::AsNumber(GreatSwordDamage);
-				FText NewText = FText::Format(FText::FromString(TEXT("대검: Power {0}")), Damage);
-				WeaponTextBlock->SetText(NewText);
-			}
-	}
-	else if (bIsWeaponChange)
-	{
-			WeaponType = EWeaponType::BLUNT;
-			if (Weapon_Icon)
-			{
-				Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
-			}
-
-			if (WeaponTextBlock)
-			{
-				WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
-				FText Damage = FText::AsNumber(BluntDamage);
-				FText NewText = FText::Format(FText::FromString(TEXT("둔기: Power {0}")), Damage);
-				WeaponTextBlock->SetText(NewText);
-			}
-	}
-	else if (bIsWeaponChange)
-	{
-			WeaponType = EWeaponType::KATANA;
-			if (Weapon_Icon)
-			{
-				Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
-			}
-
-			if (WeaponTextBlock)
-			{
-				WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
-				FText Damage = FText::AsNumber(KatanaDamage);
-				FText NewText = FText::Format(FText::FromString(TEXT("도: Power {0}")), Damage);
-				WeaponTextBlock->SetText(NewText);
-			}
-	}
-
-	else
-	{
-		WeaponType = EWeaponType::NONE;
-		if (Weapon_Icon)
-		{
-			Weapon_Icon->SetVisibility(ESlateVisibility::Hidden);
-		}
-
-		if (WeaponTextBlock)
-		{
-			WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-	if (WeaponStaticMesh)
-	{
-		WeaponStaticMesh->SetVisibility(bIsWeaponChange);
-	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Black, FString(TEXT("WeaponChange")));
 }
