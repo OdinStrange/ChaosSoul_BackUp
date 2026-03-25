@@ -291,38 +291,41 @@ void APlayerCharacterBase::WeaponMeshInitialization()
 
 	if (SWORD.Succeeded())
 	{
+		WeaponMeshMap.Add(EWeaponType::SWORD, SWORD.Object);
 		WeaponStaticMesh->SetStaticMesh(SWORD.Object);
 		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
 		//todo
-		WeaponMeshMap.Add(EWeaponType::SWORD, SWORD.Object);
 	}
 	if (GREATSWORD.Succeeded())
 	{
+		WeaponMeshMap.Add(EWeaponType::GREATSWORD, GREATSWORD.Object);
 		WeaponStaticMesh->SetStaticMesh(GREATSWORD.Object);
 		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
 		//todo
-		WeaponMeshMap.Add(EWeaponType::GREATSWORD, GREATSWORD.Object);
+		
 	}
 	if (BLUNT.Succeeded())
 	{
+		WeaponMeshMap.Add(EWeaponType::BLUNT, BLUNT.Object);
 		WeaponStaticMesh->SetStaticMesh(BLUNT.Object);
 		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
 		//todo
-		WeaponMeshMap.Add(EWeaponType::BLUNT, BLUNT.Object);
+		
 	}
 	if (KATANA.Succeeded())
 	{
+		WeaponMeshMap.Add(EWeaponType::KATANA, KATANA.Object);
 		WeaponStaticMesh->SetStaticMesh(KATANA.Object);
 		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
 		//todo
-		WeaponMeshMap.Add(EWeaponType::KATANA, KATANA.Object);
+		
 	}
 
 	if (WeaponStaticMesh)
 	{
 		WeaponStaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_Socket"));
 
-		WeaponStaticMesh->SetVisibility(false);
+		WeaponStaticMesh->SetVisibility(true);
 	}
 }
 
