@@ -10,6 +10,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+#include "Particles/ParticleSystem.h"
 
 
 APlayerCharacterBase::APlayerCharacterBase()
@@ -20,7 +21,7 @@ APlayerCharacterBase::APlayerCharacterBase()
 	InputInitialization();
 	WeaponMeshInitialization();
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance(TEXT("/Game/ChaosSoul/Blueprints/Player/ABP_Player.ABP_Player_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance(TEXT("/Game/ChaosSoul/Blueprints/Player/ABP_Knight.ABP_Knight_C"));
 
 	if (AnimInstance.Class)
 	{
@@ -150,7 +151,7 @@ void APlayerCharacterBase::OnSelectKatana(const FInputActionValue& Value)
 
 void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 로직
 {
-	if (!WeaponStaticMesh) return;
+	if (!WeaponSkeletalMesh) return;
 	WeaponType = NewType;
 
     // TODO: Weapon_Icon 보이기
@@ -159,6 +160,7 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 	if (Weapon_Icon)
 	{
 		Weapon_Icon->SetVisibility(ESlateVisibility::Visible);
+		Weapon_Icon->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));//컬러 및 투명도 조절 가능
 	}
 	if (WeaponTextBlock)
 	{
@@ -176,14 +178,14 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 			WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
 		}
 
-		if (WeaponStaticMesh)
+		if (WeaponSkeletalMesh)
 		{
-			WeaponStaticMesh->SetHiddenInGame(true);
+			WeaponSkeletalMesh->SetHiddenInGame(true);
 		}
 		return;
 	}
 
-	const TObjectPtr<UStaticMesh>* FoundValuePtr = WeaponMeshMap.Find(NewType);
+	const TObjectPtr<USkeletalMesh>* FoundValuePtr = WeaponMeshMap.Find(NewType);
 	if (FoundValuePtr == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Black, FString(TEXT("Weapon is not found")));
@@ -191,7 +193,7 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 	}
 
 	// TODO: UObject 포인터 꺼내기 (UStaticMesh*)
-	UStaticMesh* FoundMesh = FoundValuePtr->Get();
+	USkeletalMesh* FoundMesh = FoundValuePtr->Get();
 
 	// TODO: FoundMesh 널 체크 분기
 	if (FoundMesh == nullptr)
@@ -201,7 +203,7 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 	}
 
 	// TODO: WeaponStaticMesh 널 체크 분기
-	WeaponStaticMesh->SetStaticMesh(FoundMesh);
+	//WeaponSkeletalMesh->SetSkeletalMesh(FoundMesh);
 
 	switch (NewType)
 	{
@@ -269,7 +271,7 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 void APlayerCharacterBase::PlayerMeshInitialization()
 {
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>
-		PlayerSkeletalMesh(TEXT("/Script/Engine.Skeleton'/Game/ParagonGreystone/Characters/Heroes/Greystone/Meshes/Greystone_Skeleton.Greystone_Skeleton'"));
+		PlayerSkeletalMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Fab/Armored_Guard_Knight_Rig/armored_guard_knight_rig/SkeletalMeshes/armored_guard_knight_rig.armored_guard_knight_rig'"));
 	if (PlayerSkeletalMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(PlayerSkeletalMesh.Object);
@@ -279,53 +281,53 @@ void APlayerCharacterBase::PlayerMeshInitialization()
 
 void APlayerCharacterBase::WeaponMeshInitialization()
 {
-	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SWORD"));
-	WeaponStaticMesh->SetupAttachment(RootComponent);
+	WeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SWORD"));
+	WeaponSkeletalMesh->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> SWORD(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Sword/sword/StaticMeshes/sword.sword'"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> GREATSWORD(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Free_Prototype_Stylized_Weapons_V1/Wpn_2HSword_Set_01A1.Wpn_2HSword_Set_01A1'"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BLUNT(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Weapon_Mace_1/weapon_mace_1/StaticMeshes/weapon_mace_1.weapon_mace_1'"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> KATANA(TEXT("/Script/Engine.StaticMesh'/Game/Fab/Katana/scene/StaticMeshes/scene.scene'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SWORD(TEXT("/Script/Engine.SkeletalMesh'/Game/ChaosSoul/SKM_short_sword.SKM_short_sword'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> GREATSWORD(TEXT("/Script/Engine.SkeletalMesh'/Game/ChaosSoul/SKM_sword.SKM_sword'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> BLUNT(TEXT("/Script/Engine.SkeletalMesh'/Game/ChaosSoul/SKM_weapon_mace_1.SKM_weapon_mace_1'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> KATANA(TEXT("/Script/Engine.SkeletalMesh'/Game/ChaosSoul/SKM_scene.SKM_scene'"));
 
 	WeaponMeshMap.Empty();
 
 	if (SWORD.Succeeded())
 	{
 		WeaponMeshMap.Add(EWeaponType::SWORD, SWORD.Object);
-		WeaponStaticMesh->SetStaticMesh(SWORD.Object);
-		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
-		//todo
+		WeaponSkeletalMesh->SetSkeletalMesh(SWORD.Object);
+		WeaponSkeletalMesh->SetRelativeRotation(FRotator(0, -90, 0));
+	//todo
 	}
 	if (GREATSWORD.Succeeded())
 	{
 		WeaponMeshMap.Add(EWeaponType::GREATSWORD, GREATSWORD.Object);
-		WeaponStaticMesh->SetStaticMesh(GREATSWORD.Object);
-		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		WeaponSkeletalMesh->SetSkeletalMesh(GREATSWORD.Object);
+		WeaponSkeletalMesh->SetRelativeRotation(FRotator(0, -90, 0));
 		//todo
 		
 	}
 	if (BLUNT.Succeeded())
 	{
 		WeaponMeshMap.Add(EWeaponType::BLUNT, BLUNT.Object);
-		WeaponStaticMesh->SetStaticMesh(BLUNT.Object);
-		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		WeaponSkeletalMesh->SetSkeletalMesh(BLUNT.Object);
+		WeaponSkeletalMesh->SetRelativeRotation(FRotator(0, -90, 0));
 		//todo
 		
 	}
 	if (KATANA.Succeeded())
 	{
 		WeaponMeshMap.Add(EWeaponType::KATANA, KATANA.Object);
-		WeaponStaticMesh->SetStaticMesh(KATANA.Object);
-		GetMesh()->SetWorldRotation(FRotator(0, -90, 0));
+		WeaponSkeletalMesh->SetSkeletalMesh(KATANA.Object);
+		WeaponSkeletalMesh->SetRelativeRotation(FRotator(0, -90, 0));
 		//todo
 		
 	}
 
-	if (WeaponStaticMesh)
+	if (WeaponSkeletalMesh)
 	{
-		WeaponStaticMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_Socket"));
+		WeaponSkeletalMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon_Socket"));
 
-		WeaponStaticMesh->SetVisibility(true);
+		WeaponSkeletalMesh->SetVisibility(false);
 	}
 }
 
@@ -404,6 +406,17 @@ void APlayerCharacterBase::InputInitialization()
 	}
 }
 
+void APlayerCharacterBase::EffectInitialization()
+{
+	static ConstructorHelpers::FObjectFinder <UParticleSystem> FireEffectObj(TEXT("/Script/Engine.ParticleSystem'/Game/StarterContent/Particles/P_Explosion.P_Explosion'"));
+	if (FireEffectObj.Succeeded())
+	{
+		FireEffect = FireEffectObj.Object;
+	}
+}
+
+
+
 void APlayerCharacterBase::Move(const FInputActionValue& Value) 
 {
 	if (playerState == EPlayerStates::ATTACK) return;
@@ -461,3 +474,37 @@ void APlayerCharacterBase::Attack()
 
 	if (playerState == EPlayerStates::ATTACK) return;
 }
+
+void APlayerCharacterBase::AttackTrace()
+{
+	FVector StartLocation = GetMesh()->GetSocketLocation("hand_r"); //공격위치
+	FVector EndLocation = StartLocation;
+	float SphereRadius = 70.0f; //공격범위
+	float Damage = 50.0f;
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); //무시할 엑터
+
+	bool bHit = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		StartLocation,
+		EndLocation,
+		FQuat::Identity,
+		ECC_GameTraceChannel4,
+		FCollisionShape::MakeSphere(SphereRadius),
+		Params
+	);
+
+	AActor* HitActor = HitResult.GetActor();
+
+	if (bHit && HitActor)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireEffect, HitActor->GetActorLocation());
+		HitActor->Destroy();
+		//HitActor->TakeDamage(Damage, GetController(), HitActor);
+	}
+	DrawDebugSphere(GetWorld(), StartLocation, SphereRadius, 12, FColor::Red, false, 1.0f);
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireEffect, StartLocation);
+}
+

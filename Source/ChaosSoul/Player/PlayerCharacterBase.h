@@ -81,10 +81,13 @@ private:
 	void WeaponMeshInitialization();
 	void CameraInitialization();
 	void InputInitialization();
+	void EffectInitialization();
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack();
+
+	void AttackTrace();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
@@ -110,11 +113,11 @@ public:
 	float PlayerMoveSpeed = 30.0f;
 
 	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* WeaponStaticMesh;
+	class USkeletalMeshComponent* WeaponSkeletalMesh;
 
 	// 타입 -> 메쉬 매핑 (에디터에서 채우는 방식 권장)
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EWeaponType, TObjectPtr<UStaticMesh>> WeaponMeshMap;
+	TMap<EWeaponType, TObjectPtr<USkeletalMesh>> WeaponMeshMap;
 
 protected:
 	// 숫자키 입력 액션들(에디터/블루프린트에서 지정)
@@ -146,6 +149,11 @@ public:
 public:
 	UPROPERTY(EditAnywhere, Category = "Sounds")
 	USoundBase* AttackSound;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UParticleSystem* FireEffect;
+	
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Widget")
