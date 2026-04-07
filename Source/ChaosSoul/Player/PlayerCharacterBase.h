@@ -86,7 +86,6 @@ private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack();
-
 	void AttackTrace();
 
 private:
@@ -167,4 +166,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	UTextBlock* WeaponTextBlock;
+
+public:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UCameraShakeBase> WeaponCamerashakeClass;
 };

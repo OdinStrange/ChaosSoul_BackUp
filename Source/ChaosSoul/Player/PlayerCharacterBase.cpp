@@ -454,8 +454,13 @@ void APlayerCharacterBase::Attack()
 	{
 		AnimInstance->Montage_Play(AttackMontage);
 
+		AttackTrace();
 
+	}
 
+	if (WeaponCamerashakeClass)
+	{
+		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(WeaponCamerashakeClass);
 	}
 
 	//람다 형식 : [캡처리스트](매개변수)->반환형 {실행코드};
@@ -477,7 +482,7 @@ void APlayerCharacterBase::Attack()
 
 void APlayerCharacterBase::AttackTrace()
 {
-	FVector StartLocation = GetMesh()->GetSocketLocation("hand_r"); //공격위치
+	FVector StartLocation = WeaponSkeletalMesh->GetSocketLocation("Attack_Socket"); //공격위치
 	FVector EndLocation = StartLocation;
 	float SphereRadius = 70.0f; //공격범위
 	float Damage = 50.0f;
@@ -491,7 +496,7 @@ void APlayerCharacterBase::AttackTrace()
 		StartLocation,
 		EndLocation,
 		FQuat::Identity,
-		ECC_GameTraceChannel4,
+		ECC_GameTraceChannel2,
 		FCollisionShape::MakeSphere(SphereRadius),
 		Params
 	);
