@@ -49,10 +49,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	float EnemyHp;
 
+	UPROPERTY(EditAnywhere)
+	float EnemyDamage;
+
 public:
 	void InitializeMeshes();
 	void InitializeAnimInstance();
 	void InitializeSize();
 	void InitializeHp();
 	void InitializeDamage();
+	void InitializeAIController();
 };

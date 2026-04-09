@@ -54,11 +54,11 @@ void AEnemyBase::InitializeAnimInstance()
 {
 	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
 	{
-		
+		GetMesh()->SetAnimInstanceClass(EnemyAnimBlueprints[EEnemyType::NORMALENEMY]);
 	}
 	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
 	{
-		
+		GetMesh()->SetAnimInstanceClass(EnemyAnimBlueprints[EEnemyType::MAGICENEMY]);
 	}
 }
 
@@ -66,11 +66,13 @@ void AEnemyBase::InitializeSize()
 {
 	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
 	{
-
+		EnemySize = FVector(1.1f, 1.1f, 1.1f);
+		SetActorScale3D(EnemySize);
 	}
 	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
 	{
-
+		EnemySize = FVector(1.5f, 1.5f, 1.5f);
+		SetActorScale3D(EnemySize);
 	}
 }
 
@@ -78,11 +80,11 @@ void AEnemyBase::InitializeHp()
 {
 	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
 	{
-
+		EnemyHp = 100;
 	}
 	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
 	{
-
+		EnemyHp = 200;
 	}
 }
 
@@ -90,11 +92,17 @@ void AEnemyBase::InitializeDamage()
 {
 	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
 	{
-
+		EnemyDamage = 10;
 	}
 	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
 	{
-
+		EnemyDamage = 20;
 	}
+}
+
+void AEnemyBase::InitializeAIController()
+{
+	/*AIControllerClass = AEnemyAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;*/
 }
 
