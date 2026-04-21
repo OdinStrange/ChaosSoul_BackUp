@@ -14,10 +14,18 @@ class CHAOSSOUL_API AEnemyAIController : public AAIController
 {
 	GENERATED_BODY()
 	
+public:
+	AEnemyAIController();
+
 protected:
 	virtual void BeginPlay() override;
 
 	APawn* PlayerPawn;
+
+	UPROPERTY(EditAnywhere)
+	class UBehaviorTree* EnemyBehaviorTree;
+
+	APawn* Player;
 
 public:
 	virtual void Tick(float Deltaseconds) override;
