@@ -2,13 +2,14 @@
 
 
 #include "Monster/EnemyBase.h"
+#include "Monster/EnemyAIController.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	InitializeAIController();
 }
 
 // Called when the game starts or when spawned
@@ -16,6 +17,11 @@ void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	InitializeMeshes();
+	InitializeAnimInstance();
+	InitializeSize();
+	InitializeHp();
+	InitializeDamage();
 }
 
 // Called every frame
@@ -48,12 +54,14 @@ void AEnemyBase::InitializeMeshes()
 			GetMesh()->SetSkeletalMesh(EnemyMeshes[EEnemyType::MAGICENEMY]);
 		}
 	}
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 }
 
 void AEnemyBase::InitializeAnimInstance()
 {
 	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
 	{
+		
 		GetMesh()->SetAnimInstanceClass(EnemyAnimBlueprints[EEnemyType::NORMALENEMY]);
 	}
 	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
