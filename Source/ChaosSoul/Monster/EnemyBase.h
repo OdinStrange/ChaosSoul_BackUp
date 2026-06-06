@@ -33,6 +33,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
+	//ApplyDamage 호출 시 엔진이 이 함수를 실행해 CurrentEnemyHp를 깎는다
+
 public:
 	UPROPERTY(EditAnywhere)
 	EEnemyType CurrentEnemyType = EEnemyType::NORMALENEMY;
@@ -46,8 +50,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector EnemySize;
 
-	UPROPERTY(EditAnywhere)
-	float EnemyHp;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float MaxEnemyHp; //에디터에서 몬스터 타입별 최대 HP 설정
+
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	float CurrentEnemyHp; //런타임 중 실제로 깎이는 HP
 
 	UPROPERTY(EditAnywhere)
 	float EnemyDamage;

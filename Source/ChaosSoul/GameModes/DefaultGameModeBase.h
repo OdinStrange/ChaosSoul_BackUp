@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class CHAOSSOUL_API ADefaultGameModeBase : public AGameModeBase
+class CHAOSSOUL_API ADefaultGameModeBase : public AGameModeBase//언리얼의 AGameModeBase를 상속받아서 ADefaultGameModeBase라는 새 클래스를 만든다
 {
 	GENERATED_BODY()//필요한 숨은 코드들 넣어주는 매크로
 	

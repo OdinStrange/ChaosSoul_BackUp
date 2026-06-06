@@ -34,21 +34,22 @@ void AEnemyAIController::BeginPlay()
 void AEnemyAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (!Player || !PlayerPawn || !GetBlackboardComponent() || !GetPawn()) return;
+
 	GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), Player->GetActorLocation());
-	//SetFocus(PlayerPawn);
-	//MoveToActor(PlayerPawn);
 
 	FVector MyLocation = GetPawn()->GetActorLocation();
-	
-
 	FVector PlayerLocation = PlayerPawn->GetActorLocation();
 	float Distance = FVector::Dist(MyLocation, PlayerLocation);
 
-	if (Distance <= 150)
+	if (Distance <= 150.0f)
 	{
-		//Attack
 		GetBlackboardComponent()->SetValueAsBool(TEXT("bIsAttack"), true);
-
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Attack"));
+	}
+	else
+	{
+		GetBlackboardComponent()->SetValueAsBool(TEXT("bIsAttack"), false);
 	}
 }

@@ -88,12 +88,35 @@ void AEnemyBase::InitializeHp()
 {
 	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
 	{
-		EnemyHp = 100;
+		MaxEnemyHp = 100;
 	}
 	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
 	{
-		EnemyHp = 200;
+		MaxEnemyHp = 200;
 	}
+	CurrentEnemyHp = MaxEnemyHp; //시작 시 현재 HP를 최대 HP로 초기화
+}
+
+float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	//부모(AActor)의 TakeDamage를 먼저 실행해 엔진 내부 처리를 보장
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	//CurrentEnemyHp에서 데미지를 빼되 0~MaxEnemyHp 범위를 벗어나지 않게 고정
+	CurrentEnemyHp = FMath::Clamp(CurrentEnemyHp - ActualDamage, 0.f, MaxEnemyHp);
+
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow,
+		FString::Printf(TEXT("[Enemy] 데미지: %.0f | HP: %.0f / %.0f"), ActualDamage, CurrentEnemyHp, MaxEnemyHp));
+
+	if (CurrentEnemyHp <= 0.f)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("[Enemy] 사망 → Destroy"));
+		//HP가 0 이하면 이 액터를 월드에서 제거
+		Destroy();
+	}
+
+	return ActualDamage; //실제로 적용된 데미지 값을 반환
 }
 
 void AEnemyBase::InitializeDamage()
