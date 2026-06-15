@@ -133,7 +133,7 @@ void AEnemyBase::InitializeDamage()
 
 void AEnemyBase::InitializeAIController()
 {
-	/*AIControllerClass = AEnemyAIController::StaticClass();
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;*/
+	AIControllerClass = AEnemyAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 

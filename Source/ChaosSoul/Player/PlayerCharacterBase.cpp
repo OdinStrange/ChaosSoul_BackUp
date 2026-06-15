@@ -21,7 +21,7 @@ APlayerCharacterBase::APlayerCharacterBase()
 	InputInitialization();
 	WeaponMeshInitialization();
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance(TEXT("/Game/ChaosSoul/Blueprints/Player/ABP_Knight.ABP_Knight_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance(TEXT("/Game/ChaosSoul/Blueprints/Player/ABP_PlayerCharacterBase.ABP_PlayerCharacterBase_C"));
 
 	if (AnimInstance.Class)
 	{

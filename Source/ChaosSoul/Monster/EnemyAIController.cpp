@@ -46,7 +46,6 @@ void AEnemyAIController::Tick(float DeltaSeconds)
 	if (Distance <= 150.0f)
 	{
 		GetBlackboardComponent()->SetValueAsBool(TEXT("bIsAttack"), true);
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Attack"));
 	}
 	else
 	{

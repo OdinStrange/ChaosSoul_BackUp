@@ -59,6 +59,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	float EnemyDamage;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float AttackCooldown = 1.5f; //공격과 공격 사이에 필요한 최소 간격(초) — 에디터에서 몬스터별로 조정
+
+	// GetWorld()->GetTimeSeconds()로 기록한 마지막 공격 시각(게임 시작 후 경과 초)
+	// -999로 초기화하면 (현재 시각 - (-999)) 가 항상 쿨타임보다 크므로 게임 시작 직후 첫 공격이 바로 가능
+	float LastAttackTime = -999.f;
+
 public:
 	void InitializeMeshes();
 	void InitializeAnimInstance();
