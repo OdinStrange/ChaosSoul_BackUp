@@ -23,7 +23,7 @@
 |-|-|
 |무기 4종 전환 시스템|숫자키로 소검/대검/둔기/카타나 전환, UI 텍스트로 데미지 수치 표시|
 |카메라 줌 연동|앞으로 달릴 때 카메라가 자동으로 멀어지는 동적 팔 길이 조절|
-|카메라 셰이크|공격 시 `BP\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_WeaponLegacyCameraShake` 재생|
+|카메라 셰이크|공격 시 `BP_WeaponLegacyCameraShake` 재생|
 |몬스터 2종 구조|계획은 1종이었으나 Zombie + Juggernaut 두 타입 베이스 구성|
 
 \---
@@ -38,7 +38,7 @@
 
    * `AIControllerClass = AEnemyAIController::StaticClass();` 주석 해제
    * `AutoPossessAI` 설정 주석 해제
-4. **BTTask 공격 로직 구현** (`BTTask\\\_EnemyAttack.cpp`)
+4. **BTTask 공격 로직 구현** (`BTTask_EnemyAttack.cpp`)
 
    * `ExecuteTask`에서 실제 데미지 적용 코드 작성
 
