@@ -11,6 +11,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "Particles/ParticleSystem.h"
+#include "TimerManager.h"
+#include "GameFramework/GameModeBase.h"
 
 
 APlayerCharacterBase::APlayerCharacterBase()
@@ -48,6 +50,12 @@ void APlayerCharacterBase::BeginPlay()
 	}
 
 	GetCharacterMovement()->MaxWalkSpeed = PlayerMoveSpeed;
+
+	if (WeaponSkeletalMesh)
+	{
+		WeaponSkeletalMesh->SetHiddenInGame(true);
+	}
+
 	if (HUDClass)
 	{
 		HUDWidget = CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass);
@@ -58,6 +66,11 @@ void APlayerCharacterBase::BeginPlay()
 
 		Weapon_Icon = Cast<UImage>(HUDWidget->GetWidgetFromName(TEXT("Weapon_Icon")));
 		WeaponTextBlock = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("SubTitleText")));
+		if (UHUDUserWidget* HUD = Cast<UHUDUserWidget>(HUDWidget))
+		{
+			HPBar = HUD->HPBar;
+			if (HPBar) HPBar->SetPercent(1.f);
+		}
 
 	}
 	if (Weapon_Icon)
@@ -67,7 +80,8 @@ void APlayerCharacterBase::BeginPlay()
 
 	if (WeaponTextBlock)
 	{
-		WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
+		WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+		WeaponTextBlock->SetText(FText::FromString(TEXT("None")));
 	}
 }
 
@@ -175,7 +189,8 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 
 		if (WeaponTextBlock)
 		{
-			WeaponTextBlock->SetVisibility(ESlateVisibility::Hidden);
+			WeaponTextBlock->SetVisibility(ESlateVisibility::Visible);
+			WeaponTextBlock->SetText(FText::FromString(TEXT("None")));
 		}
 
 		if (WeaponSkeletalMesh)
@@ -381,22 +396,22 @@ void APlayerCharacterBase::InputInitialization()
 		AttackAction = InputAttack.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder <UInputAction> InputSWORDChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_SWORD.IA_SWORD'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputSWORDChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_SWORD.IA_SWORD'"));
 	if (InputSWORDChange.Object != nullptr)
 	{
 		SWORDAction = InputSWORDChange.Object;
 	}
-	static ConstructorHelpers::FObjectFinder <UInputAction> InputGREATSWORDChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_GREATSWORD.IA_GREATSWORD'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputGREATSWORDChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_GREATSWORD.IA_GREATSWORD'"));
 	if (InputGREATSWORDChange.Object != nullptr)
 	{
 		GREATSWORDAction = InputGREATSWORDChange.Object;
 	}
-	static ConstructorHelpers::FObjectFinder <UInputAction> InputBLUNTChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_BLUNT.IA_BLUNT'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputBLUNTChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_BLUNT.IA_BLUNT'"));
 	if (InputBLUNTChange.Object != nullptr)
 	{
 		BLUNTAction = InputBLUNTChange.Object;
 	}
-	static ConstructorHelpers::FObjectFinder <UInputAction> InputKATANAChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_KATANA.IA_KATANA'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputKATANAChange(TEXT("/Script/EnhancedInput.InputAction'/Game/ChaosSoul/Input/Action/IA_KATANA.IA_KATANA'"));
 	if (InputKATANAChange.Object != nullptr)
 	{
 		KATANAAction = InputKATANAChange.Object;
@@ -405,7 +420,7 @@ void APlayerCharacterBase::InputInitialization()
 
 void APlayerCharacterBase::EffectInitialization()
 {
-	static ConstructorHelpers::FObjectFinder <UParticleSystem> FireEffectObj(TEXT("/Script/Engine.ParticleSystem'/Game/StarterContent/Particles/P_Explosion.P_Explosion'"));
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> FireEffectObj(TEXT("/Script/Engine.ParticleSystem'/Game/StarterContent/Particles/P_Explosion.P_Explosion'"));
 	if (FireEffectObj.Succeeded())
 	{
 		FireEffect = FireEffectObj.Object;
@@ -441,9 +456,10 @@ void APlayerCharacterBase::Look(const FInputActionValue& Value)
 
 void APlayerCharacterBase::Attack()
 {
-	playerState = EPlayerStates::ATTACK;
-
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance || AnimInstance->Montage_IsPlaying(AttackMontage)) return;
+
+	playerState = EPlayerStates::ATTACK;
 
 	if (AttackMontage)
 	{
@@ -534,16 +550,35 @@ float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& D
 
 	//CurrentHP에서 데미지를 빼되 0~MaxHP 범위를 벗어나지 않게 고정
 	CurrentHP = FMath::Clamp(CurrentHP - ActualDamage, 0.f, MaxHP);
+	if (HPBar) HPBar->SetPercent(CurrentHP / MaxHP);
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red,
 		FString::Printf(TEXT("[Player] 데미지: %.0f | HP: %.0f / %.0f"), ActualDamage, CurrentHP, MaxHP));
 
 	if (CurrentHP <= 0.f)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("[Player] 사망 → Destroy"));
-		//HP가 0 이하면 이 액터를 월드에서 제거 (추후 리스폰/게임오버로 교체 예정)
-		Destroy();
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("[Player] 사망 → 리스폰 대기"));
+		Die();
 	}
 
 	return ActualDamage; //실제로 적용된 데미지 값을 반환
+}
+
+void APlayerCharacterBase::Die()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		// PC는 폰이 Destroy된 후에도 살아있으므로 타이머를 PC에 설정
+		FTimerHandle TimerHandle;
+		PC->GetWorldTimerManager().SetTimer(TimerHandle, [PC]()
+		{
+			if (PC && PC->GetWorld())
+			{
+				PC->GetWorld()->GetAuthGameMode()->RestartPlayer(PC);
+			}
+		}, RespawnDelay, false);
+	}
+
+	Destroy();
 }

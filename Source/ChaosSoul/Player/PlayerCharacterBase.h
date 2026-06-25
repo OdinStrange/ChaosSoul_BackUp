@@ -5,6 +5,8 @@
 #include "InputActionValue.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/ProgressBar.h"
+#include "HUDUserWidget.h"
 #include "PlayerCharacterBase.generated.h"
 
 UENUM(BlueprintType)//언리얼 리플렉션 시스템에 등록하겠다
@@ -98,6 +100,8 @@ private:
 	void Attack();
 	void AttackTrace();
 
+	void Die();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	//디테일 패널에서 이 변수를 Input 묶음으로 보여주고 어디서든 보기만 가능하게끔 리플렉션 시스템에 등록한다.
@@ -148,6 +152,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float MaxHP = 200.f;
 
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float RespawnDelay = 3.f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	float CurrentHP = 200.f;
 
@@ -188,6 +195,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	UTextBlock* WeaponTextBlock;
+
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	UProgressBar* HPBar = nullptr;
 
 public:
 	UPROPERTY(EditAnywhere)
