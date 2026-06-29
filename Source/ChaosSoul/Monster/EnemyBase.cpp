@@ -3,6 +3,8 @@
 
 #include "Monster/EnemyBase.h"
 #include "Monster/EnemyAIController.h"
+#include "Player/PlayerCharacterBase.h"
+#include "HUDUserWidget.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -10,6 +12,13 @@ AEnemyBase::AEnemyBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	InitializeAIController();
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackMontageFinder(
+		TEXT("/Game/ChaosSoul/Enemy/Attack_PrimaryA_Montage.Attack_PrimaryA_Montage"));
+	if (AttackMontageFinder.Succeeded())
+	{
+		AttackMontage = AttackMontageFinder.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -97,6 +106,15 @@ void AEnemyBase::InitializeHp()
 	CurrentEnemyHp = MaxEnemyHp; //시작 시 현재 HP를 최대 HP로 초기화
 }
 
+void AEnemyBase::Attack()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance || !AttackMontage) return;
+	if (AnimInstance->Montage_IsPlaying(AttackMontage)) return;
+
+	AnimInstance->Montage_Play(AttackMontage);
+}
+
 float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
@@ -105,6 +123,18 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 	//CurrentEnemyHp에서 데미지를 빼되 0~MaxEnemyHp 범위를 벗어나지 않게 고정
 	CurrentEnemyHp = FMath::Clamp(CurrentEnemyHp - ActualDamage, 0.f, MaxEnemyHp);
+
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (APlayerCharacterBase* PlayerChar = Cast<APlayerCharacterBase>(PC->GetPawn()))
+		{
+			if (UHUDUserWidget* HUD = Cast<UHUDUserWidget>(PlayerChar->HUDWidget))
+			{
+				if (HUD->EnemyHPBar)
+					HUD->EnemyHPBar->SetPercent(CurrentEnemyHp / MaxEnemyHp);
+			}
+		}
+	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow,
 		FString::Printf(TEXT("[Enemy] 데미지: %.0f | HP: %.0f / %.0f"), ActualDamage, CurrentEnemyHp, MaxEnemyHp));

@@ -13,4 +13,7 @@ class CHAOSSOUL_API UHUDUserWidget : public UUserWidget
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* HPBar;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UProgressBar* EnemyHPBar;
 };

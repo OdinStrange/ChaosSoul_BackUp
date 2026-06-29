@@ -200,6 +200,8 @@ void APlayerCharacterBase::ChangeWeaponTo(EWeaponType NewType)//무기 변경 �
 		return;
 	}
 
+	WeaponSkeletalMesh->SetHiddenInGame(false);
+
 	const TObjectPtr<USkeletalMesh>* FoundValuePtr = WeaponMeshMap.Find(NewType);
 	if (FoundValuePtr == nullptr)
 	{
@@ -464,9 +466,7 @@ void APlayerCharacterBase::Attack()
 	if (AttackMontage)
 	{
 		AnimInstance->Montage_Play(AttackMontage, AttackSpeed);
-
 		AttackTrace();
-
 	}
 
 	if (WeaponCamerashakeClass)

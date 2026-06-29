@@ -38,6 +38,12 @@ public:
 	//ApplyDamage 호출 시 엔진이 이 함수를 실행해 CurrentEnemyHp를 깎는다
 
 public:
+	void Attack();
+
+	UPROPERTY(VisibleAnywhere, Category = "Input")
+	class UInputAction* AttackAction;
+
+public:
 	UPROPERTY(EditAnywhere)
 	EEnemyType CurrentEnemyType = EEnemyType::NORMALENEMY;
 
@@ -61,6 +67,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float AttackCooldown = 1.5f; //공격과 공격 사이에 필요한 최소 간격(초) — 에디터에서 몬스터별로 조정
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* AttackMontage;
 
 	// GetWorld()->GetTimeSeconds()로 기록한 마지막 공격 시각(게임 시작 후 경과 초)
 	// -999로 초기화하면 (현재 시각 - (-999)) 가 항상 쿨타임보다 크므로 게임 시작 직후 첫 공격이 바로 가능

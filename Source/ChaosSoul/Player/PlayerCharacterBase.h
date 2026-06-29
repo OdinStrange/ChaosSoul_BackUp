@@ -98,9 +98,12 @@ private:
 	//Move 함수 안에서 참조로 받는 Enhanced Input이 넘겨주는 입력 데이터와 입력값 Value를 수정하지 않고 처리하는 함수 생성자
 	void Look(const FInputActionValue& Value);
 	void Attack();
-	void AttackTrace();
 
 	void Die();
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void AttackTrace();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Input")

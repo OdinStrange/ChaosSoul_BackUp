@@ -63,6 +63,7 @@ EBTNodeResult::Type UBTTask_EnemyAttack::ExecuteTask(UBehaviorTreeComponent& Own
 
 	// 공격 직전에 현재 시각을 기록해 두면, 다음 ExecuteTask 호출 때 Elapsed 계산의 기준이 된다
 	Enemy->LastAttackTime = Now;
+	Enemy->Attack();
 	UGameplayStatics::ApplyDamage(Player, Enemy->EnemyDamage, AIController, Enemy, UDamageType::StaticClass());
 
 	return EBTNodeResult::Succeeded;
