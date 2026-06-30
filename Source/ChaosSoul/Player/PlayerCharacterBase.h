@@ -28,6 +28,9 @@ enum class EWeaponType : uint8
 	
 };
 
+// 1. 포션 개수가 바뀐 것을 UI에 알리기 위한 델리게이트 선언 (매개변수 1개: 새로운 포션 개수)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPotionChanged, int32, NewCurrentPotion);
+
 UCLASS()
 class CHAOSSOUL_API APlayerCharacterBase : public ACharacter
 	//언리얼의 APlayerCharacterBase를 상속받아서 ACharacter라는 새 클래스를 만든다
@@ -50,6 +53,14 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	//AActor::TakeDamage를 재정의 — ApplyDamage 호출 시 엔진이 이 함수를 실행해 CurrentHP를 깎는다
+
+	// 2. 외부(UI 등)에서 이 이벤트를 구독할 수 있도록 public으로 선언
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnPotionChanged OnPotionChanged;
+
+	// 포션을 마시는 함수
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void UsePotion();
 
 private://그 클래스 안에서만 사용 가능
 	// 숫자키 액션 바인딩용 콜백(Enhanced Input 시그니처 고정)
@@ -101,6 +112,9 @@ private:
 
 	void Die();
 
+	bool bCanAttack = true;
+	FTimerHandle AttackCooldownHandle;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void AttackTrace();
@@ -119,6 +133,13 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Input")
 	class UInputAction* AttackAction;
+
+	// 3. 포션 데이터 변수들
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	int32 CurrentPotion;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat", meta = (AllowPrivateAccess = "true"))
+	int32 MaxPotion;
 
 public:
 	UPROPERTY(VisibleAnywhere)
@@ -152,6 +173,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* KATANAAction = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* PotionAction = nullptr;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float MaxHP = 200.f;
 
@@ -161,8 +185,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	float CurrentHP = 200.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float HealAmount = 100.f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	float AttackSpeed = 1.f; //무기별 공격 속도 배율 (몽타주 재생 속도 + 쿨타임에 적용)
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float AttackCooldown = 1.0f; // 공격 쿨타임(초)
 
 public:
 	UPROPERTY(EditAnywhere)
