@@ -74,6 +74,7 @@ void APlayerCharacterBase::BeginPlay()
 		{
 			HPBar = HUD->HPBar;
 			if (HPBar) HPBar->SetPercent(1.f);
+			if (HUD->EnemyHPBar) HUD->EnemyHPBar->SetVisibility(ESlateVisibility::Hidden);
 		}
 		// HUD에 초기 포션 개수 표시
 		OnPotionChanged.Broadcast(CurrentPotion);
@@ -613,6 +614,17 @@ float APlayerCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& D
 	return ActualDamage; //실제로 적용된 데미지 값을 반환
 }
 
+
+bool APlayerCharacterBase::AddPotion(int32 Amount)
+{
+	if (CurrentPotion >= MaxPotion)
+	{
+		return false;
+	}
+	CurrentPotion = FMath::Clamp(CurrentPotion + Amount, 0, MaxPotion);
+	OnPotionChanged.Broadcast(CurrentPotion);
+	return true;
+}
 
 void APlayerCharacterBase::UsePotion()
 {

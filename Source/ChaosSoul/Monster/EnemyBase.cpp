@@ -5,6 +5,7 @@
 #include "Monster/EnemyAIController.h"
 #include "Player/PlayerCharacterBase.h"
 #include "HUDUserWidget.h"
+#include "PotionPickup.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -49,33 +50,18 @@ void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void AEnemyBase::InitializeMeshes()
 {
-	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
+	if (USkeletalMesh** FoundMesh = EnemyMeshes.Find(CurrentEnemyType))
 	{
-		if (EnemyMeshes[EEnemyType::NORMALENEMY])
-		{
-			GetMesh()->SetSkeletalMesh(EnemyMeshes[EEnemyType::NORMALENEMY]);
-		}
-	}
-	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
-	{
-		if (EnemyMeshes[EEnemyType::MAGICENEMY])
-		{
-			GetMesh()->SetSkeletalMesh(EnemyMeshes[EEnemyType::MAGICENEMY]);
-		}
+		GetMesh()->SetSkeletalMesh(*FoundMesh);
 	}
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 }
 
 void AEnemyBase::InitializeAnimInstance()
 {
-	if (CurrentEnemyType == EEnemyType::NORMALENEMY)
+	if (TSubclassOf<UAnimInstance>* FoundAnim = EnemyAnimBlueprints.Find(CurrentEnemyType))
 	{
-		
-		GetMesh()->SetAnimInstanceClass(EnemyAnimBlueprints[EEnemyType::NORMALENEMY]);
-	}
-	else if (CurrentEnemyType == EEnemyType::MAGICENEMY)
-	{
-		GetMesh()->SetAnimInstanceClass(EnemyAnimBlueprints[EEnemyType::MAGICENEMY]);
+		GetMesh()->SetAnimInstanceClass(*FoundAnim);
 	}
 }
 
@@ -131,7 +117,10 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			if (UHUDUserWidget* HUD = Cast<UHUDUserWidget>(PlayerChar->HUDWidget))
 			{
 				if (HUD->EnemyHPBar)
+				{
+					HUD->EnemyHPBar->SetVisibility(ESlateVisibility::Visible);
 					HUD->EnemyHPBar->SetPercent(CurrentEnemyHp / MaxEnemyHp);
+				}
 			}
 		}
 	}
@@ -142,7 +131,27 @@ float AEnemyBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	if (CurrentEnemyHp <= 0.f)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange, TEXT("[Enemy] 사망 → Destroy"));
-		//HP가 0 이하면 이 액터를 월드에서 제거
+
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+		{
+			if (APlayerCharacterBase* PlayerChar = Cast<APlayerCharacterBase>(PC->GetPawn()))
+			{
+				if (UHUDUserWidget* HUD = Cast<UHUDUserWidget>(PlayerChar->HUDWidget))
+				{
+					if (HUD->EnemyHPBar)
+						HUD->EnemyHPBar->SetVisibility(ESlateVisibility::Hidden);
+				}
+			}
+		}
+
+		if (DropPickupClass && FMath::FRand() <= DropChance)
+		{
+			FVector SpawnLocation = GetActorLocation();
+			SpawnLocation.Z += 50.0f;
+			GetWorld()->SpawnActor<APotionPickup>(DropPickupClass, SpawnLocation, FRotator::ZeroRotator);
+		}
+
+		OnEnemyDied.Broadcast();
 		Destroy();
 	}
 

@@ -369,7 +369,13 @@ void ACombatCharacter::HandleDeath()
 
 void ACombatCharacter::ApplyHealing(float Healing, AActor* Healer)
 {
-	// stub
+	if (CurrentHP <= 0.0f)
+	{
+		return;
+	}
+
+	CurrentHP = FMath::Clamp(CurrentHP + Healing, 0.0f, MaxHP);
+	LifeBarWidget->SetLifePercentage(CurrentHP / MaxHP);
 }
 
 void ACombatCharacter::RespawnCharacter()

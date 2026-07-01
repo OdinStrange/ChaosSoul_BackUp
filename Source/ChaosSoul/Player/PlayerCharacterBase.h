@@ -62,6 +62,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void UsePotion();
 
+	// 월드 픽업으로 포션을 획득하는 함수. 실제로 추가됐으면 true 반환
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool AddPotion(int32 Amount = 1);
+
 private://그 클래스 안에서만 사용 가능
 	// 숫자키 액션 바인딩용 콜백(Enhanced Input 시그니처 고정)
 	UFUNCTION()//이 함수를 언리얼 리플렉션 시스템에 등록하겠다

@@ -6,6 +6,10 @@
 #include "GameFramework/Character.h"
 #include "EnemyBase.generated.h"
 
+class APotionPickup;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyBaseDied);
+
 UENUM(BlueprintType)
 enum class EEnemyType : uint8
 {
@@ -74,6 +78,18 @@ public:
 	// GetWorld()->GetTimeSeconds()로 기록한 마지막 공격 시각(게임 시작 후 경과 초)
 	// -999로 초기화하면 (현재 시각 - (-999)) 가 항상 쿨타임보다 크므로 게임 시작 직후 첫 공격이 바로 가능
 	float LastAttackTime = -999.f;
+
+	/** 사망 시 외부(스포너 등)에 알리는 델리게이트 */
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FOnEnemyBaseDied OnEnemyDied;
+
+	/** 사망 시 드랍할 픽업 클래스 (블루프린트 자식에서 지정) */
+	UPROPERTY(EditAnywhere, Category="Drop")
+	TSubclassOf<APotionPickup> DropPickupClass;
+
+	/** 드랍 확률 (0=절대 안 드랍, 1=항상 드랍) */
+	UPROPERTY(EditAnywhere, Category="Drop", meta=(ClampMin=0, ClampMax=1))
+	float DropChance = 0.75f;
 
 public:
 	void InitializeMeshes();

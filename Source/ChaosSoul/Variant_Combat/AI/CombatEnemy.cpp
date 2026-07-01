@@ -11,6 +11,7 @@
 #include "TimerManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
+#include "../Gameplay/CombatPotionPickup.h"
 
 ACombatEnemy::ACombatEnemy()
 {
@@ -235,6 +236,14 @@ void ACombatEnemy::HandleDeath()
 
 	// call the died delegate to notify any subscribers
 	OnEnemyDied.Broadcast();
+
+	// randomly drop a pickup at the enemy's feet
+	if (DropPickupClass && FMath::FRand() <= DropChance)
+	{
+		FVector SpawnLocation = GetActorLocation();
+		SpawnLocation.Z += 50.0f;
+		GetWorld()->SpawnActor<ACombatPotionPickup>(DropPickupClass, SpawnLocation, FRotator::ZeroRotator);
+	}
 
 	// set up the death timer
 	GetWorld()->GetTimerManager().SetTimer(DeathTimer, this, &ACombatEnemy::RemoveFromLevel, DeathRemovalTime);

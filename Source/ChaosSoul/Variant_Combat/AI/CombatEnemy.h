@@ -10,6 +10,8 @@
 #include "Engine/TimerHandle.h"
 #include "CombatEnemy.generated.h"
 
+class ACombatPotionPickup;
+
 class UWidgetComponent;
 class UCombatLifeBar;
 class UAnimMontage;
@@ -129,6 +131,14 @@ protected:
 	/** Time to wait before removing this character from the level after it dies */
 	UPROPERTY(EditAnywhere, Category="Death")
 	float DeathRemovalTime = 5.0f;
+
+	/** Pickup class to spawn when this enemy dies (set in Blueprint child) */
+	UPROPERTY(EditAnywhere, Category="Drop")
+	TSubclassOf<ACombatPotionPickup> DropPickupClass;
+
+	/** Probability (0-1) that this enemy drops a pickup on death */
+	UPROPERTY(EditAnywhere, Category="Drop", meta=(ClampMin=0, ClampMax=1))
+	float DropChance = 0.5f;
 
 	/** Enemy death timer */
 	FTimerHandle DeathTimer;
