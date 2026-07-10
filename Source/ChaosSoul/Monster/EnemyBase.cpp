@@ -26,12 +26,27 @@ AEnemyBase::AEnemyBase()
 void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	InitializeMeshes();
 	InitializeAnimInstance();
 	InitializeSize();
 	InitializeHp();
 	InitializeDamage();
+
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (APlayerCharacterBase* PlayerChar = Cast<APlayerCharacterBase>(PC->GetPawn()))
+		{
+			if (UHUDUserWidget* HUD = Cast<UHUDUserWidget>(PlayerChar->HUDWidget))
+			{
+				if (HUD->EnemyHPBar)
+				{
+					HUD->EnemyHPBar->SetVisibility(ESlateVisibility::Visible);
+					HUD->EnemyHPBar->SetPercent(1.f);
+				}
+			}
+		}
+	}
 }
 
 // Called every frame
